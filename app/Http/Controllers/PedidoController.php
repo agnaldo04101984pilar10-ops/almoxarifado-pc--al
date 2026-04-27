@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Pedido;
 use App\Models\Material;
 use App\Models\Setor;
-use Illuminate\Support\Facades\DB; // ESTA LINHA RESOLVE O SEU ERRO
+use Illuminate\Support\Facades\DB; 
 
 class PedidoController extends Controller
 {
