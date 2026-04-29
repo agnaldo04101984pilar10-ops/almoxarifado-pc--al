@@ -1,84 +1,71 @@
-<x-app-layout>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@extends('layouts.app')
 
-    <x-slot name="header">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="background: #1e3a8a; padding: 10px; border-radius: 8px;">
-                <span style="color: white; font-weight: bold; font-size: 20px;">POLÍCIA CIENTÍFICA</span>
-            </div>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('ALAGOAS - Gestão de Almoxarifado') }}
-            </h2>
-        </div>
-    </x-slot>
-
-    <div style="background-color: #f1f5f9; min-height: 100vh; padding: 30px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            
-            <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
-                
-                <div style="flex: 1; min-width: 280px; background: #fff; padding: 25px; border-radius: 12px; border-top: 6px solid #1e3a8a; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-                    <h3 style="color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase;">📦 Total em Itens</h3>
-                    <p style="font-size: 32px; font-weight: 900; color: #1e3a8a; margin: 5px 0;">{{ $totalMateriais }}</p>
-                </div>
-
-                <div style="flex: 1; min-width: 280px; background: #fff; padding: 25px; border-radius: 12px; border-top: 6px solid #b91c1c; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-                    <h3 style="color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase;">⚠️ Alerta de Reposição</h3>
-                    <p style="font-size: 32px; font-weight: 900; color: #b91c1c; margin: 5px 0;">{{ $estoqueBaixo->count() }}</p>
-                </div>
-
-                <div style="flex: 1; min-width: 280px; background: #fff; padding: 25px; border-radius: 12px; border-top: 6px solid #ca8a04; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-                    <h3 style="color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase;">💸 Consumo Mensal</h3>
-                    <p style="font-size: 32px; font-weight: 900; color: #ca8a04; margin: 5px 0;">R$ {{ number_format($gastoMes, 2, ',', '.') }}</p>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 25px; flex-wrap: wrap; margin-bottom: 30px;">
-                
-                <div style="flex: 2; min-width: 500px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);">
-                    <h3 style="font-weight: bold; color: #1e293b; margin-bottom: 20px;">Gasto por Setor (Mês Vigente)</h3>
-                    <canvas id="graficoSetores" height="150"></canvas>
-                </div>
-
-                <div style="flex: 1; min-width: 300px; background: #1e293b; padding: 25px; border-radius: 15px; color: white; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);">
-                    <h3 style="font-weight: bold; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 15px; color: #f1f5f9;">🚨 Reposição Imediata</h3>
-                    <ul style="list-style: none; padding: 0;">
-                        @forelse($estoqueBaixo as $item)
-                            <li style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #334155;">
-                                <span>{{ $item->descricao }}</span>
-                                <span style="color: #f87171; font-weight: bold;">{{ $item->estoque_atual }} un.</span>
-                            </li>
-                        @empty
-                            <li style="color: #94a3b8; text-align: center; padding-top: 20px;">Estoque conforme padrão.</li>
-                        @endforelse
-                    </ul>
-                </div>
-            </div>
-
-        </div>
+@section('content')
+<div class="space-y-8">
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <h3 class="text-2xl font-bold text-[#0B1437]">Olá, {{ Auth::user()->name }}</h3>
+        <p class="text-gray-400 text-sm">Setor: <span class="font-bold text-blue-900">Instituto de Criminalística</span></p>
     </div>
 
-    <script>
-        const ctx = document.getElementById('graficoSetores').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: {!! json_encode($labels) !!},
-                datasets: [{
-                    label: 'Total Gasto (R$)',
-                    data: {!! json_encode($valores) !!},
-                    backgroundColor: '#3b82f6',
-                    borderColor: '#1e3a8a',
-                    borderWidth: 1,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    </script>
-</x-app-layout>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        @php
+            $cards = [
+                ['label' => 'Requisições Pendentes', 'value' => '12', 'color' => 'text-blue-600'],
+                ['label' => 'Requisições Aprovadas (Mês)', 'value' => '08', 'color' => 'text-green-600'],
+                ['label' => 'Entregues (Mês)', 'value' => '05', 'color' => 'text-purple-600'],
+                ['label' => 'Itens em Estoque', 'value' => '236', 'color' => 'text-orange-500'],
+            ];
+        @endphp
+
+        @foreach($cards as $card)
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+            <p class="text-4xl font-black {{ $card['color'] }} mb-2">{{ $card['value'] }}</p>
+            <p class="text-xs font-bold text-gray-500 uppercase leading-tight">{{ $card['label'] }}</p>
+        </div>
+        @endforeach
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+            <div class="flex justify-between items-center mb-6">
+                <h4 class="font-bold text-[#0B1437]">Consumo Mensal (por setor)</h4>
+                <select class="bg-gray-50 border-none text-xs font-bold rounded-lg px-3 py-1">
+                    <option>Junho / 2024</option>
+                </select>
+            </div>
+            <div class="h-64 flex items-end justify-around space-x-2">
+                <div class="bg-blue-600 w-12 rounded-t-lg" style="height: 60%"></div>
+                <div class="bg-blue-600 w-12 rounded-t-lg" style="height: 80%"></div>
+                <div class="bg-blue-600 w-12 rounded-t-lg" style="height: 100%"></div>
+                <div class="bg-blue-600 w-12 rounded-t-lg" style="height: 70%"></div>
+                <div class="bg-blue-600 w-12 rounded-t-lg" style="height: 90%"></div>
+                <div class="bg-blue-600 w-12 rounded-t-lg" style="height: 65%"></div>
+            </div>
+            <div class="flex justify-around mt-4 text-[10px] font-bold text-gray-400 uppercase">
+                <span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div>
+                <h4 class="font-bold text-[#0B1437] mb-6">Limite Mensal do Setor</h4>
+                <p class="text-2xl font-black text-[#0B1437]">R$ 25.000,00</p>
+                <p class="text-xs text-gray-400 font-bold mb-8 uppercase">Limite disponível</p>
+                
+                <div class="relative w-32 h-32 mx-auto mb-8">
+                    <svg class="w-full h-full" viewBox="0 0 36 36">
+                        <path class="text-gray-100" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="text-green-500" stroke-width="3" stroke-dasharray="68, 100" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center font-black text-xl text-gray-700">68%</div>
+                </div>
+            </div>
+
+            <div class="border-t pt-4">
+                <p class="text-xl font-black text-[#0B1437]">R$ 17.120,50</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Total consumido</p>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

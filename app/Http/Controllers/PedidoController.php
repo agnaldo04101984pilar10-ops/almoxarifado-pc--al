@@ -2,71 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Requisicao;
+use App\Models\ItemRequisicao;
 use Illuminate\Http\Request;
-use App\Models\Pedido;
-use App\Models\Material;
-use App\Models\Setor;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PedidoController extends Controller
 {
     public function index()
     {
-        $pedidos = Pedido::with(['material', 'user', 'setor'])->latest()->get();
+        // Carrega os pedidos com as relações para mostrar na tabela
+        $pedidos = Requisicao::with('user')->orderBy('created_at', 'desc')->get();
         return view('pedidos.index', compact('pedidos'));
     }
 
     public function create()
     {
-        $materiais = Material::all();
-        return view('pedidos.create', compact('materiais'));
+        return view('pedidos.create');
     }
 
     public function store(Request $request)
     {
-        $user = auth()->user();
-        
-        // Garante que o usuário tenha setor
-        if (!$user->setor_id) {
-            $primeiroSetor = Setor::first();
-            if (!$primeiroSetor) {
-                return redirect()->back()->with('error', 'Cadastre um Setor primeiro!');
-            }
-            $user->update(['setor_id' => $primeiroSetor->id]);
-        }
-
-        $material = Material::findOrFail($request->material_id);
-        
-        // Verifica estoque antes de tudo
-        if ($material->estoque_atual < $request->quantidade) {
-            return redirect()->back()->with('error', "Estoque insuficiente! Temos apenas {$material->estoque_atual} unidades.");
-        }
-
-        $preco = $material->preco ?? $material->preco_unitario ?? 0;
-        $valorTotal = $preco * $request->quantidade;
+        $request->validate([
+            'materiais' => 'required|array',
+            'quantidades' => 'required|array',
+        ]);
 
         try {
-            // O DB::transaction agora vai funcionar porque importamos lá no topo
-            DB::transaction(function () use ($user, $material, $request, $preco, $valorTotal) {
-                
-                // Cria o pedido
-                Pedido::create([
-                    'user_id' => $user->id,
-                    'material_id' => $material->id,
-                    'setor_id' => $user->setor_id,
-                    'quantidade' => $request->quantidade,
-                    'valor_unitario' => $preco,
-                    'valor_total' => $valorTotal,
+            DB::beginTransaction();
+
+            $requisicao = Requisicao::create([
+                'user_id' => Auth::id(),
+                'setor' => Auth::user()->setor,
+                'status' => 'Pendente',
+            ]);
+
+            foreach ($request->materiais as $index => $material_id) {
+                ItemRequisicao::create([
+                    'requisicao_id' => $requisicao->id,
+                    'material_id' => $material_id,
+                    'quantidade_solicitada' => $request->quantidades[$index],
                 ]);
+            }
 
-                // Baixa no estoque
-                $material->decrement('estoque_atual', $request->quantidade);
-            });
-
-            return redirect()->route('pedidos.index')->with('success', 'Pedido realizado com sucesso!');
+            DB::commit();
+            return redirect()->route('pedidos.index')->with('success', 'Requisição enviada com sucesso!');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao processar pedido: ' . $e->getMessage());
+            DB::rollback();
+            return back()->with('error', 'Erro ao salvar: ' . $e->getMessage());
         }
+    }
+
+    // --- OS MÉTODOS QUE VOCÊ PEDIU PARA ADICIONAR ---
+
+    public function analise($id)
+    {
+        // Busca o pedido com os itens, o material de cada item e o usuário que pediu
+        $pedido = Requisicao::with('itens.material', 'user')->findOrFail($id);
+        return view('pedidos.analise', compact('pedido'));
+    }
+
+    public function aprovar(Request $request, $id)
+    {
+        $pedido = Requisicao::findOrFail($id);
+        
+        foreach ($request->itens as $item_id => $dados) {
+            $item = ItemRequisicao::findOrFail($item_id);
+            $qtd_atendida = $dados['quantidade_atendida'];
+
+            // REGRA 5: Nunca maior que o solicitado (Validação de Segurança)
+            if ($qtd_atendida > $item->quantidade_solicitada) {
+                return back()->with('error', "Erro: A quantidade atendida do item {$item->material->nome} não pode ser maior que a solicitada.");
+            }
+
+            $item->update(['quantidade_atendida' => $qtd_atendida]);
+        }
+
+        $pedido->update(['status' => 'Aprovada']);
+
+        return redirect()->route('pedidos.index')->with('success', 'Requisição aprovada e quantidades ajustadas!');
     }
 }

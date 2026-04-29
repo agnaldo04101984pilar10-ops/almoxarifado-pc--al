@@ -1,56 +1,75 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Meus Pedidos Realizados') }}
-            </h2>
-            <a href="{{ route('pedidos.create') }}" style="background-color: #059669; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; text-decoration: none;">
-                + Novo Pedido
-            </a>
-        </div>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            @if(session('success'))
-                <div style="background-color: #dcfce7; color: #166534; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border: 1px solid #22c55e;">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <table class="w-full border-collapse" style="table-layout: auto; width: 100%;">
-                        <thead>
-                            <tr style="background-color: #f3f4f6; text-align: left;">
-                                <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Data</th>
-                                <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Material</th>
-                                <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Qtd</th>
-                                <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">V. Unitário</th>
-                                <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Total</th>
-                                <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Setor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($pedidos as $pedido)
-                                <tr style="text-align: left;">
-                                    <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">{{ $pedido->material->descricao ?? 'N/A' }}</td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">{{ $pedido->quantidade }}</td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">R$ {{ number_format($pedido->valor_unitario, 2, ',', '.') }}</td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">R$ {{ number_format($pedido->valor_total, 2, ',', '.') }}</td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">{{ $pedido->setor->nome ?? 'N/A' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" style="padding: 20px; text-align: center; color: #6b7280;">Nenhum pedido encontrado.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+@section('content')
+<div class="space-y-6">
+    <div class="flex justify-between items-center bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
+        <div>
+            <h3 class="text-xl font-black text-[#0B1437] uppercase">Gerenciar Requisições</h3>
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Acompanhamento de pedidos por setor</p>
         </div>
+        <a href="{{ route('pedidos.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-xs transition shadow-lg shadow-blue-600/20 uppercase tracking-widest">
+            Nova Requisição
+        </a>
     </div>
-</x-app-layout>
+
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-xl font-bold text-sm shadow-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 border-b border-gray-100">
+                <tr>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Solicitante / Setor</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @forelse($pedidos as $pedido)
+                <tr class="hover:bg-gray-50/50 transition duration-200">
+                    <td class="px-6 py-4 font-black text-[#0B1437]">#{{ $pedido->id }}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-500">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
+                    <td class="px-6 py-4">
+                        <p class="text-sm font-bold text-[#0B1437]">{{ $pedido->user->name }}</p>
+                        <p class="text-[10px] text-blue-500 font-bold uppercase">{{ $pedido->setor }}</p>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        @if($pedido->status == 'Pendente')
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-[9px] font-black uppercase tracking-tighter">Aguardando</span>
+                        @elseif($pedido->status == 'Aprovada')
+                            <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-[9px] font-black uppercase tracking-tighter">Aprovada</span>
+                        @else
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase tracking-tighter">{{ $pedido->status }}</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        @if($pedido->status == 'Pendente')
+                            <a href="{{ route('pedidos.analise', $pedido->id) }}" class="inline-flex items-center space-x-2 bg-[#0B1437] hover:bg-blue-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                                <span>Analisar</span>
+                            </a>
+                        @else
+                            <button disabled class="text-gray-300 font-bold text-[10px] uppercase tracking-widest">Processado</button>
+                        @endif
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="px-6 py-16 text-center">
+                        <div class="flex flex-col items-center">
+                            <i class="fa-solid fa-inbox text-gray-100 text-6xl mb-4"></i>
+                            <p class="text-gray-400 font-bold">Nenhuma requisição no momento.</p>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+@endsection

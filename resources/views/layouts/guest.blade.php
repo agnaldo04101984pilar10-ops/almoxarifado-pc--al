@@ -1,89 +1,35 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="pt-br">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Polícia Científica AL</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <title>Login - Polícia Científica de Alagoas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { margin: 0; padding: 0; font-family: 'figtree', sans-serif; }
-        .login-container {
-            display: flex;
-            min-height: 100vh;
-        }
-        /* LADO ESQUERDO - AZUL ESCURO */
-        .login-sidebar {
-            flex: 1;
-            background-color: #001533; /* Azul escuro oficial */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-        .login-sidebar img {
-            width: 250px;
-            margin-bottom: 20px;
-        }
-        .login-sidebar h1 {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        .login-sidebar p {
-            font-size: 1.2rem;
-            color: #d1d5db;
-        }
-        
-        /* LADO DIREITO - BRANCO */
-        .login-content {
-            flex: 1;
-            background-color: #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        .login-card h2 {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #111827;
-            margin-bottom: 30px;
-        }
-        
-        /* Ajuste para ecrãs pequenos */
-        @media (max-width: 768px) {
-            .login-container { flex-direction: column; }
-            .login-sidebar { padding: 40px 20px; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-sidebar">
-            <img src="{{ asset('images/brasao.png') }}" alt="Brasão Polícia Científica AL" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/b/b3/Bras%C3%A3o_da_Pol%C3%ADcia_Cient%C3%ADfica_de_Alagoas.png'">
-            
-            <h1>POLÍCIA CIENTÍFICA</h1>
-            <p>DO ESTADO DE ALAGOAS</p>
-            <div style="margin-top: 40px; font-weight: 300; letter-spacing: 2px;">
-                SISTEMA DE GESTÃO<br>DE ALMOXARIFADO
+<body class="bg-[#F4F7FE] antialiased">
+    <div class="min-h-screen flex">
+        <div class="hidden lg:flex lg:w-1/2 bg-[#0B1437] items-center justify-center p-12 text-center text-white relative">
+            <div class="relative z-10">
+                <img src="{{ asset('images/brasao.png') }}" alt="Brasão PC-AL" class="w-64 h-auto mx-auto mb-8 shadow-2xl">
+                <h1 class="text-4xl font-extrabold tracking-tight mb-2 uppercase">Polícia Científica</h1>
+                <p class="text-2xl font-light tracking-[0.2em] mb-8">DO ESTADO DE ALAGOAS</p>
+                
+                <div class="h-0.5 w-24 bg-blue-500 mx-auto mb-8"></div>
+                
+                <h2 class="text-xl font-bold tracking-widest uppercase opacity-80">Sistema de Gestão<br>de Almoxarifado</h2>
+            </div>
+            <div class="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+                <i class="fa-solid fa-shield-halved text-[40rem] -bottom-20 -left-20 absolute"></i>
             </div>
         </div>
 
-        <div class="login-content">
-            <div class="login-card">
-                <h2>Acesse sua conta</h2>
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white lg:bg-[#F4F7FE]">
+            <div class="w-full max-w-md bg-white p-10 rounded-[32px] shadow-2xl border border-gray-100">
                 {{ $slot }}
             </div>
         </div>

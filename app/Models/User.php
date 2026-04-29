@@ -14,7 +14,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'setor_id', // Esta linha permite o vínculo com o setor
+        'setor', // Adicionado para combinar com seu Dashboard
     ];
 
     protected $hidden = [
@@ -22,8 +22,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function setor()
+    protected function casts(): array
     {
-        return $this->belongsTo(Setor::class);
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }

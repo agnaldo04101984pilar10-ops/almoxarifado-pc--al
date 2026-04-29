@@ -9,12 +9,12 @@ class Material extends Model
 {
     use HasFactory;
 
-    // Permitir que o Laravel salve esses campos no banco
+    protected $table = 'materials';
+
     protected $fillable = [
+        'nome',
         'codigo_siap',
-        'descricao',
         'unidade_medida',
-        'preco_unitario',
-        'estoque_atual',
+        'estoque_atual'
     ];
 }

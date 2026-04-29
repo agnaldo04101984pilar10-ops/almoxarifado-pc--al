@@ -2,45 +2,44 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Material;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class MaterialController extends Controller
 {
     public function index()
     {
-        $materials = Material::all();
+        // Pega todos os materiais do banco
+        $materials = Material::orderBy('nome', 'asc')->get();
         return view('materials.index', compact('materials'));
-    }
-
-    public function create()
-    {
-        return view('materials.create');
     }
 
     public function store(Request $request)
     {
-        Material::create($request->all());
+        // Validação obrigatória para não dar erro de SQL
+        $request->validate([
+            'nome' => 'required',
+            'codigo_siap' => 'required',
+            'unidade_medida' => 'required',
+        ]);
+
+        // Cria o material com os dados do formulário
+        Material::create([
+            'nome' => $request->nome,
+            'codigo_siap' => $request->codigo_siap,
+            'unidade_medida' => $request->unidade_medida,
+            'estoque_atual' => $request->estoque_atual ?? 0,
+        ]);
+
         return redirect()->route('materials.index')->with('success', 'Material cadastrado!');
-    }
-
-    public function edit($id)
-    {
-        $material = Material::findOrFail($id);
-        return view('materials.edit', compact('material'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $material = Material::findOrFail($id);
-        $material->update($request->all());
-        return redirect()->route('materials.index')->with('success', 'Material atualizado!');
     }
 
     public function destroy($id)
     {
-        $material = Material::findOrFail($id);
-        $material->delete();
-        return redirect()->route('materials.index')->with('success', 'Material excluído!');
+        if (Gate::allows('admin-central')) {
+            Material::findOrFail($id)->delete();
+        }
+        return redirect()->route('materials.index');
     }
 }
