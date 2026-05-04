@@ -12,9 +12,10 @@ class Material extends Model
     protected $table = 'materials';
 
     protected $fillable = [
-        'nome',
-        'codigo_siap',
-        'unidade_medida',
-        'estoque_atual'
-    ];
+    'nome',
+    'codigo_siap',
+    'unidade_medida', 
+    'estoque_atual',
+    'preco_unitario',
+];
 }

@@ -1,71 +1,70 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6">
-    <div class="flex justify-between items-center bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
+<div class="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-8">
         <div>
-            <h3 class="text-xl font-black text-[#0B1437] uppercase">Gerenciar Requisições</h3>
-            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Acompanhamento de pedidos por setor</p>
+            <h1 class="text-2xl font-black text-[#0B1437] uppercase">Requisições de Materiais</h1>
+            <p class="text-gray-400 text-sm font-bold tracking-tight">Gerenciamento de solicitações das unidades</p>
         </div>
-        <a href="{{ route('pedidos.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-xs transition shadow-lg shadow-blue-600/20 uppercase tracking-widest">
-            Nova Requisição
+        @if(Auth::user()->tipo_usuario != 'admin')
+        <a href="{{ route('pedidos.create') }}" class="bg-blue-600 hover:bg-[#0B1437] text-white px-6 py-3 rounded-2xl text-xs font-black uppercase transition-all shadow-lg shadow-blue-100 flex items-center gap-2">
+            <i class="fa-solid fa-plus">Nova Requisição</i>
         </a>
+        @endif
     </div>
 
     @if(session('success'))
-        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-xl font-bold text-sm shadow-sm">
+        <div class="mb-6 p-4 bg-green-50 text-green-600 rounded-2xl text-xs font-black uppercase border border-green-100">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
-        <table class="w-full text-left">
-            <thead class="bg-gray-50 border-b border-gray-100">
-                <tr>
-                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</th>
-                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data</th>
-                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Solicitante / Setor</th>
-                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Ações</th>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="text-left border-b border-gray-50">
+                    <th class="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Unidade/Solicitante</th>
+                    <th class="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Material</th>
+                    <th class="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Qtd</th>
+                    <th class="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                    <th class="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Ação</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
-                @forelse($pedidos as $pedido)
-                <tr class="hover:bg-gray-50/50 transition duration-200">
-                    <td class="px-6 py-4 font-black text-[#0B1437]">#{{ $pedido->id }}</td>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-500">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
-                    <td class="px-6 py-4">
-                        <p class="text-sm font-bold text-[#0B1437]">{{ $pedido->user->name }}</p>
-                        <p class="text-[10px] text-blue-500 font-bold uppercase">{{ $pedido->setor }}</p>
+            <tbody>
+                @forelse($pedidos as $p)
+                <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all">
+                    <td class="py-5">
+                        <div class="font-bold text-[#0B1437]">{{ $p->user->setor }}</div>
+                        <div class="text-[10px] text-gray-400 uppercase font-black">{{ $p->user->name }}</div>
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        @if($pedido->status == 'Pendente')
-                            <span class="px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-[9px] font-black uppercase tracking-tighter">Aguardando</span>
-                        @elseif($pedido->status == 'Aprovada')
-                            <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-[9px] font-black uppercase tracking-tighter">Aprovada</span>
+                    <td class="py-5">
+                        <div class="text-sm font-bold text-gray-700">{{ $p->material_nome }}</div>
+                    </td>
+                    <td class="py-5 text-sm font-black text-blue-600">
+                        {{ $p->quantidade }}
+                    </td>
+                    <td class="py-5">
+                        @if($p->status == 'pendente')
+                            <span class="bg-orange-50 text-orange-500 px-3 py-1 rounded-lg text-[10px] font-black uppercase animate-pulse">Pendente</span>
                         @else
-                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase tracking-tighter">{{ $pedido->status }}</span>
+                            <span class="bg-green-50 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Entregue</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4 text-right">
-                        @if($pedido->status == 'Pendente')
-                            <a href="{{ route('pedidos.analise', $pedido->id) }}" class="inline-flex items-center space-x-2 bg-[#0B1437] hover:bg-blue-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition">
-                                <i class="fa-solid fa-magnifying-glass-chart"></i>
-                                <span>Analisar</span>
-                            </a>
-                        @else
-                            <button disabled class="text-gray-300 font-bold text-[10px] uppercase tracking-widest">Processado</button>
+                    <td class="py-5 text-right">
+                        @if(Auth::user()->tipo_usuario == 'admin' && $p->status == 'pendente')
+                        <form action="{{ route('pedidos.atender', $p->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all shadow-md">
+                                Baixar no Estoque
+                            </button>
+                        </form>
                         @endif
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-16 text-center">
-                        <div class="flex flex-col items-center">
-                            <i class="fa-solid fa-inbox text-gray-100 text-6xl mb-4"></i>
-                            <p class="text-gray-400 font-bold">Nenhuma requisição no momento.</p>
-                        </div>
-                    </td>
+                    <td colspan="5" class="py-20 text-center text-gray-400 uppercase text-xs font-black">Nenhuma requisição encontrada</td>
                 </tr>
                 @endforelse
             </tbody>

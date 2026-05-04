@@ -10,44 +10,26 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* 1. CONTAINER DO MENU COM SCROLL */
         .sidebar-content {
             height: calc(100vh - 220px);
             overflow-y: auto;
             overflow-x: hidden;
-            padding-right: 8px; /* Espaço para a barra não colar no texto */
+            padding-right: 8px;
         }
 
-        /* 2. ESTILO DA BARRA DE ROLAGEM (SCROLLBAR) */
-        /* Definindo a largura */
-        .sidebar-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        /* O fundo da barra (trilho) fica invisível por padrão */
-        .sidebar-content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        /* O "pegador" da barra (thumb) */
+        .sidebar-content::-webkit-scrollbar { width: 6px; }
+        .sidebar-content::-webkit-scrollbar-track { background: transparent; }
         .sidebar-content::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.05); /* Quase invisível no escuro */
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             transition: all 0.3s ease;
         }
 
-        /* 3. O EFEITO QUE VOCÊ PEDIU: AO PASSAR O MOUSE NO MENU */
         .sidebar-content:hover::-webkit-scrollbar-thumb {
-            background: #3b82f6; /* O Azul se destaca para o usuário ver que pode rolar */
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Um leve brilho azul */
+            background: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
 
-        /* Quando clicar e arrastar a barra */
-        .sidebar-content::-webkit-scrollbar-thumb:active {
-            background: #2563eb;
-        }
-
-        /* Ajuste do indicador lateral de seleção */
         .nav-item .indicator {
             width: 4px;
             height: 20px;
@@ -77,25 +59,40 @@
 
             <nav class="sidebar-content px-4 py-6 space-y-2">
                 @php
+                    // Buscamos a contagem de pendentes para exibir no menu "Cadastros"
+                    $pendentesCount = \App\Models\User::where('status', 'pendente')->count();
+
                     $menus = [
                         ['icon' => 'fa-house', 'label' => 'Dashboard', 'route' => 'dashboard'],
                         ['icon' => 'fa-file-signature', 'label' => 'Requisições', 'route' => 'pedidos.index'],
-                        ['icon' => 'fa-boxes-stacked', 'label' => 'Materiais', 'route' => 'materials.index'],
-                        ['icon' => 'fa-right-to-bracket', 'label' => 'Entradas', 'route' => '#'],
+                        ['icon' => 'fa-boxes-stacked', 'label' => 'Materiais', 'route' => 'materiais.index'],
+                        ['icon' => 'fa-right-to-bracket', 'label' => 'Entradas', 'route' => 'entradas.create'],
                         ['icon' => 'fa-right-from-bracket', 'label' => 'Saídas', 'route' => '#'],
                         ['icon' => 'fa-warehouse', 'label' => 'Estoque', 'route' => '#'],
                         ['icon' => 'fa-chart-pie', 'label' => 'Limites Mensais', 'route' => '#'],
                         ['icon' => 'fa-file-lines', 'label' => 'Relatórios', 'route' => '#'],
-                        ['icon' => 'fa-address-card', 'label' => 'Cadastros', 'route' => '#'],
+                        // ATUALIZADO: Rota de usuários pendentes inserida aqui
+                        ['icon' => 'fa-address-card', 'label' => 'Cadastros', 'route' => 'usuarios.pendentes'],
                         ['icon' => 'fa-gears', 'label' => 'Configurações', 'route' => '#'],
                     ];
                 @endphp
 
                 @foreach($menus as $menu)
                     <a href="{{ ($menu['route'] != '#' && Route::has($menu['route'])) ? route($menu['route']) : '#' }}" 
-                       class="nav-item relative flex items-center space-x-4 px-5 py-3 rounded-2xl transition-all duration-300 {{ Request::routeIs($menu['route']) ? 'active bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5' }}">
-                        <i class="fa-solid {{ $menu['icon'] }} w-5 text-center text-lg"></i>
-                        <span class="text-[13px] font-semibold tracking-wide">{{ $menu['label'] }}</span>
+                       class="nav-item relative flex items-center justify-between px-5 py-3 rounded-2xl transition-all duration-300 {{ Request::routeIs($menu['route']) ? 'active bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5' }}">
+                        
+                        <div class="flex items-center space-x-4">
+                            <i class="fa-solid {{ $menu['icon'] }} w-5 text-center text-lg"></i>
+                            <span class="text-[13px] font-semibold tracking-wide">{{ $menu['label'] }}</span>
+                        </div>
+
+                        {{-- ALERTA DE CADASTROS PENDENTES --}}
+                        @if($menu['label'] == 'Cadastros' && $pendentesCount > 0)
+                            <span class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg animate-pulse shadow-lg shadow-red-500/20">
+                                {{ $pendentesCount }}
+                            </span>
+                        @endif
+
                         <div class="indicator"></div>
                     </a>
                 @endforeach
